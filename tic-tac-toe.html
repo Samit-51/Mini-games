@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Tic-Tac-Toe</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    *{
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body{
+      background: #252525;
+      display: grid;
+      place-items: center;
+      height: 100vh;
+    }
+    .container{
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+    .board{
+      height: 320px;
+      width: 320px;
+      display: grid;
+      background: #141414;
+      gap: 10px;
+      padding: 20px;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      border-radius: 26px;
+    }
+    .box{
+      background: rgb(225, 220, 119);
+      font-size: 3rem;
+      color: white;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-weight: 700;
+      border-radius: 6px;
+    }
+    .buttons{
+      display: flex;
+      gap: 20px;
+    }
+    .btn{
+      height: 60px;
+      width: 150px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      background: #0ef;
+      box-shadow: 0 0 20px #0fe;
+      transition: all .3s;
+      font-weight: 600;
+      padding: 10px;
+    }
+    .btn:active{
+      scale: .8;
+    }
+    .result{
+      position: absolute;
+      width: 100%;
+      top: 15%;
+      left: 50%;
+      transform: translate(-50%, -35%);
+      font-size: 1.8rem;
+      color: white;
+      font-weight: 900;
+      text-align: center;
+    }
+    .scores{
+      width: 100%;
+      text-align: center;
+      color: white;
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      position: fixed;
+      top: 20px;
+    }
+    .score{
+      display: inline;
+    }
+  </style>
+</head>
+<body>
+  <div class="scores">X: <p class="score x">0</p>  |  <p class="score y">0</p> :O
+  </div>
+  <p class="result"></p>
+  <div class="container">
+    <div class="board">
+      <div class="box" id="box1"></div>
+      <div class="box" id="box2"></div>
+      <div class="box" id="box3"></div>
+      <div class="box" id="box4"></div>
+      <div class="box" id="box5"></div>
+      <div class="box" id="box6"></div>
+      <div class="box" id="box7"></div>
+      <div class="box" id="box8"></div>
+      <div class="box" id="box9"></div>
+    </div>
+    <div class="buttons">
+      <button class="btn" onclick=resetBoard()>Re-game</button>
+      <button class="btn" onclick=resetGame()><i class="fa-solid fa-arrow-rotate-right"></i> Reset</button>
+    </div>
+  </div>
+  <script>
+    let x = document.querySelector('.x');
+    let y = document.querySelector('.y');
+    let gameStatus = 'playing';
+    let result = document.querySelector('.result')
+    let boxes = document.querySelectorAll('.box');
+    let boardState = {
+      box1: '', box2: '', box3: '',
+      box4: '', box5: '', box6: '',
+      box7: '', box8: '', box9: ''
+    };
+    let currentTurn = 'x';
+
+    const checkWinner = () => {
+      const winningCombinations = [
+        ['box1', 'box2', 'box3'],
+        ['box4', 'box5', 'box6'],
+        ['box7', 'box8', 'box9'],
+        ['box1', 'box4', 'box7'],
+        ['box2', 'box5', 'box8'],
+        ['box3', 'box6', 'box9'],
+        ['box1', 'box5', 'box9'],
+        ['box3', 'box5', 'box7']
+      ];
+
+      for (let combination of winningCombinations) {
+        const [a, b, c] = combination;
+        if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
+          result.textContent = `Winner!! ${boardState[a].toUpperCase()} won!`;
+          if(boardState[a] === 'x'){
+            x.textContent = parseInt(x.textContent) + 1;
+          }else{
+            y.textContent = parseInt(y.textContent) + 1;
+          }
+          gameStatus = 'ended';
+          return;
+        }
+      }
+      if (Object.values(boardState).every(box => box)) {
+        result.textContent = "It's a draw!"
+        gameStatus = 'ended';
+      }
+    };
+    const resetGame = () => {
+      x.textContent = y.textContent = '0';
+      resetBoard();
+    }
+    const resetBoard = () => {
+      boardState = { box1: '', box2: '', box3: '', box4: '', box5: '', box6: '', box7: '', box8: '', box9: '' };
+      boxes.forEach(box => box.textContent = '');
+      result.textContent = '';
+      currentTurn = 'x';
+      gameStatus = 'playing';
+    };
+
+    boxes.forEach(box => {
+      box.addEventListener('click', function() {
+        if (box.textContent === '' && gameStatus === 'playing') {
+          boardState[box.id] = currentTurn;
+          box.textContent = currentTurn.toUpperCase();
+          currentTurn = currentTurn === 'x' ? 'o' : 'x';
+          setTimeout(function(){
+            checkWinner();
+          }, 100);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
