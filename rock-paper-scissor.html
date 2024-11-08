@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <title>Rock Paper Scissor</title>
+  <style>
+    *{
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body{
+      height: 100vh;
+      background: #252525;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      position: relative;
+    }
+    .timer{
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -100%);
+      height: 100px;
+      width: 100%;
+      z-index: 200;
+      color:rgb(255,223,245);
+      font-size: 5rem;
+      text-align: center;
+      font-weight: 900;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .scores{
+      width: 100%;
+      height: 50px;
+      background: linear-gradient(to right, rgb(70, 135, 225), rgb(110, 119, 225), rgb(70, 135, 225));
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+    }
+    .score{
+      margin: 0 10px;
+    }
+    i{
+      margin: 0 5px;
+    }
+    .board{
+      width: 100%;
+      height: calc(100% - 150px);
+      display: flex;
+      flex-direction: column;
+      background:rgb(107,248,59);
+      padding: 20px;
+      position: relative;
+    }
+    .board::before{
+      content: '';
+      height: 4px;
+      width: 100%;
+      position: absolute;
+      z-index: 100;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -1000%);
+      background: #fff;
+    }
+    .comp-board{
+      flex: 1;
+      display: grid;
+      place-items: center;
+    }
+    .user-board{
+      flex: 1;
+      display: grid;
+      grid-template-rows: 75% 25%;
+    }
+    .icons{
+      display: flex;
+      gap: 30px;
+      align-items: center;
+      justify-content: space-evenly;
+      padding: 0 20px;
+    }
+    .icon{
+      flex: 1;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      background: rgb(239,239,77);
+      border-radius: 15px;
+      border: 2px solid #fff;
+      transition: all .3s;
+    }
+    .icon:active{
+      scale: .8;
+    }
+    .btn{
+      border: none;
+      height: 70px;
+      width: 150px;
+      margin-top: 15px;
+      border-radius: 20px;
+      background: rgb(189, 69, 225);
+      font-size: 1.2rem;
+      color: white;
+    }
+    .selected{
+      border: 2px solid rgba(80,174,53,0.875);
+    }
+    .choice{
+      display: grid;
+      place-items: center;
+    }
+    .compChoice{
+      height: 100%;
+      width: 100%;
+      display: grid;
+      place-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="timer"></div>
+  <div class="scores"><i class="fa-solid fa-robot"></i> : <p class="score computer">0</p> | <p class="score user">0</p> : <i class="fa-solid fa-user"></i></div>
+  <div class="board">
+    <div class="comp-board">
+      <div class="compChoice"></div>
+    </div>
+    <div class="user-board">
+      <div class="choice"><div class="choiceImg" src=""></div></div>
+      <div class="icons">
+        <button class="icon" id="rock"><img width="48" height="48" src="https://img.icons8.com/fluency/48/rock.png" alt="rock"/></button>
+        <button class="icon" id="paper"><img width="53" height="53" src="https://img.icons8.com/external-vectorslab-flat-vectorslab/53/external-papers-education-vectorslab-flat-vectorslab.png" alt="external-papers-education-vectorslab-flat-vectorslab"/></button>
+        <button class="icon" id="scissor"><img width="53" height="53" src="https://img.icons8.com/external-vectorslab-flat-vectorslab/53/external-scissor-education-vectorslab-flat-vectorslab.png" alt="external-scissor-education-vectorslab-flat-vectorslab"/></button>
+      </div>
+    </div>
+  </div>
+  <button class="btn" onclick=reStart()><i class="fa-solid fa-arrow-rotate-right"></i> Re-start</button>
+  <script>
+    let CompChoice = document.querySelector('.compChoice');
+    let choiceImg = document.querySelector('.choiceImg');
+    let userScore = document.querySelector('.user');
+    let compScore = document.querySelector('.computer');
+    let choiceImgs = {
+      rock: "https://img.icons8.com/fluency/48/rock.png",
+      paper: "https://img.icons8.com/external-vectorslab-flat-vectorslab/53/external-papers-education-vectorslab-flat-vectorslab.png",
+      scissor: "https://img.icons8.com/external-vectorslab-flat-vectorslab/53/external-scissor-education-vectorslab-flat-vectorslab.png"
+    };
+    
+    let choices = document.querySelectorAll('.icon');
+    let timer = document.querySelector('.timer');
+    let time = 3;
+    let UserChoice = '';
+    let compChoice = '';
+    let lastChoice = '';
+    
+    const showTimer = () => {
+      timer.textContent = time;
+      time -= 1;
+    
+      if (time < 0) {
+        clearInterval(interval);
+        time = -1;
+        timer.textContent = '';
+        setComputerChoice();
+        setTimeout(function(){
+          checkWinner();
+        }, 300);
+      }
+    };
+    showTimer();
+    let interval = setInterval(showTimer, 1000);
+    
+    const setUserChoice = () => {
+      choices.forEach(choice => {
+        choice.classList.remove('selected');
+        choice.addEventListener('click', function() {
+          if (time >= 0) {
+            if (lastChoice) {
+              lastChoice.classList.remove('selected');
+            }
+            UserChoice = choice.id;
+            choice.classList.add('selected');
+            choiceImg.innerHTML = '';
+            let imgElement = document.createElement("img");
+            imgElement.src = choiceImgs[UserChoice];
+            imgElement.width = 120;
+            imgElement.height = 120;
+            choiceImg.appendChild(imgElement);
+            lastChoice = choice;
+          }
+        });
+      });
+    };
+    const setComputerChoice = () => {
+    let compChoices = ['rock', 'paper', 'scissor'];
+    let RandomNumber = Math.floor(Math.random() * 3);
+    compChoice = compChoices[RandomNumber];
+    CompChoice.innerHTML = ''; 
+    let imgElement = document.createElement("img");
+    imgElement.src = choiceImgs[compChoice];
+    imgElement.width = 120;
+    imgElement.height = 120;
+    CompChoice.appendChild(imgElement);
+  };
+  const checkWinner = () => {
+    if(compChoice != UserChoice){
+      if(compChoice === 'rock'){
+        if(UserChoice === 'paper'){
+          alert('You won');
+          userScore.textContent = parseInt(userScore.textContent) + 1;
+        }else if(UserChoice === 'scissor' || UserChoice === ''){
+          alert('Computer won');
+          compScore.textContent = parseInt(compScore.textContent) + 1;
+        }
+      }else if(compChoice === 'paper'){
+        if(UserChoice === 'scissor'){
+          alert('You won');
+          userScore.textContent = parseInt(userScore.textContent) + 1;
+        }else if(UserChoice === 'rock' || UserChoice === ''){
+          alert('Computer won');
+          compScore.textContent = parseInt(compScore.textContent) + 1;
+        }
+      }else if(compChoice === 'scissor'){
+        if(UserChoice === 'rock'){
+          alert('You won');
+          userScore.textContent = parseInt(userScore.textContent) + 1;
+        }else if(UserChoice === 'paper' || UserChoice === ''){
+          alert('Computer won');
+          compScore.textContent = parseInt(compScore.textContent) + 1;
+        }
+      }
+    }else{
+      alert('Draw!');
+    }
+    setTimeout(function(){
+      clearBoard();
+    }, 100);
+  }
+  const clearBoard = () => {
+    time = 3;
+    CompChoice.innerHTML = ''; 
+    if(choiceImg.innerHTML){
+      choiceImg.innerHTML = '';
+      lastChoice.classList.remove('selected');
+    }
+    interval = setInterval(showTimer, 1000);
+  }
+  setUserChoice();
+  const reStart = () => {
+    clearBoard();
+    userScore.textContent = 0;
+    compScore.textContent = 0;
+  }
+  </script>
+</body>
+</html>
